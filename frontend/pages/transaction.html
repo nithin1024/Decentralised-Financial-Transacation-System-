@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HDFE - Transactions</title>
+    <link rel="stylesheet" href="../../css/style.css">
+    <script src="../../utils/crypto.js"></script>
+    <script src="../../blockchain/merkle.js"></script>
+    <script src="../../blockchain/block.js"></script>
+    <script src="../../blockchain/blockchain.js"></script>
+    <script src="../../network/node.js"></script>
+    <script src="../../libs/ethers.min.js"></script>
+    <script src="../../web3/metamask.js"></script>
+    <script src="../components/navbar.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header-section">
+            <h1>Transfer Funds</h1>
+            <p>Initiate transactions across both decentralized layers.</p>
+        </div>
+
+        <div class="grid-2">
+            <!-- L1 Transfer -->
+            <div class="glass-card">
+                <h2 style="color:var(--accent)">Layer 1 Transfer (Custom Chain)</h2>
+                <div class="form-group mt-1">
+                    <label>Recipient Address (Public Key)</label>
+                    <input type="text" id="l1-to" class="form-control" placeholder="0x...">
+                </div>
+                <div class="form-group">
+                    <label>Amount (HDFE Coins)</label>
+                    <input type="number" id="l1-amt" class="form-control" placeholder="0">
+                </div>
+                <button class="btn btn-primary w-100 mt-1" onclick="sendL1Tx()" style="background:var(--accent)">Sign & Broadcast L1</button>
+            </div>
+
+            <!-- L3 Transfer -->
+            <div class="glass-card">
+                <h2 style="color:var(--primary)">Layer 3 Transfer (Ethereum)</h2>
+                <div class="form-group mt-1">
+                    <label>Recipient Address (ETH Address)</label>
+                    <input type="text" id="l3-to" class="form-control" placeholder="0x...">
+                </div>
+                <div class="form-group">
+                    <label>Amount (ETH)</label>
+                    <input type="number" id="l3-amt" class="form-control" placeholder="0.00" step="0.01">
+                </div>
+                <button class="btn btn-primary w-100 mt-1" onclick="sendL3Tx()">Send via MetaMask</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const net = NetworkSimulator.init();
+
+        function sendL1Tx() {
+            const priv = localStorage.getItem('l1_priv');
+            const pub = localStorage.getItem('l1_pub');
+            if(!priv) return showToast("No L1 wallet. Please generate one.", "error");
+
+            const to = document.getElementById('l1-to').value;
+            const amount = parseFloat(document.getElementById('l1-amt').value);
+
+            if(!to || !amount) return showToast("Invalid inputs", "error");
+
+            try {
+                // Digital Signature concept (Unit 1)
+                const txData = pub + to + amount + Date.now();
+                const signature = CryptoUtils.sign(txData, priv);
+
+                const tx = {
+                    from: pub,
+                    to: to,
+                    amount: amount,
+                    timestamp: Date.now(),
+                    signature: signature
+                };
+
+                // Broadcast to P2P Network (Unit 2 Layer)
+                net.mainNode.receiveTransaction(tx);
+                net.save();
+                
+                showToast("Transaction Broadcasted to L1 Network!");
+            } catch(e) {
+                showToast(e.message, "error");
+            }
+        }
+
+        async function sendL3Tx() {
+            const to = document.getElementById('l3-to').value;
+            const amount = document.getElementById('l3-amt').value;
+
+            try {
+                const hash = await MetaMaskIntegration.sendTransaction(to, amount);
+                showToast(`Tx Sent! Hash: ${hash}`);
+            } catch(e) {
+                showToast(e.message, "error");
+            }
+        }
+    </script>
+</body>
+</html>

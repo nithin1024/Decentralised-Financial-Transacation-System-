@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HDFE - Explorer</title>
+    <link rel="stylesheet" href="../../css/style.css">
+    <script src="../../utils/crypto.js"></script>
+    <script src="../../blockchain/merkle.js"></script>
+    <script src="../../blockchain/block.js"></script>
+    <script src="../../blockchain/blockchain.js"></script>
+    <script src="../../network/node.js"></script>
+    <script src="../components/navbar.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header-section">
+            <h1>Blockchain Explorer (L1)</h1>
+            <p>Immutable ledger visualization showcasing Merkle Trees and cryptographic linkage.</p>
+        </div>
+
+        <div id="explorer-view" style="max-width:900px; margin:0 auto;"></div>
+    </div>
+
+    <script>
+        const net = NetworkSimulator.init();
+        
+        document.addEventListener("DOMContentLoaded", () => {
+            const container = document.getElementById('explorer-view');
+            let html = '';
+            
+            // Render blocks in reverse order
+            [...net.mainNode.blockchain.chain].reverse().forEach(block => {
+                html += `
+                <div class="glass-card block">
+                    <div class="block-header">
+                        <div class="block-index" style="color:var(--accent)">Block #${block.index}</div>
+                        <div style="color:var(--text-muted)">${new Date(block.timestamp).toLocaleString()}</div>
+                    </div>
+                    
+                    <div class="grid-2 mb-1">
+                        <div><strong style="color:var(--text-muted)">Nonce:</strong> ${block.nonce}</div>
+                        <div><strong style="color:var(--text-muted)">Transactions:</strong> ${block.transactions.length}</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Merkle Root</label>
+                        <div class="hash-container"><span style="color:var(--warning)">${block.merkleRoot}</span></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Previous Hash</label>
+                        <div class="hash-container">${block.previousHash}</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Block Hash (SHA-256)</label>
+                        <div class="hash-container"><span style="color:var(--success)">${block.hash}</span></div>
+                    </div>
+                </div>
+                `;
+            });
+            container.innerHTML = html;
+        });
+    </script>
+</body>
+</html>

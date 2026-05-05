@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HDFE - Advanced Applications</title>
+    <link rel="stylesheet" href="../../css/style.css">
+    <script src="../components/navbar.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header-section">
+            <h1>Ecosystem Applications</h1>
+            <p>Industry-specific modules utilizing the hybrid blockchain infrastructure.</p>
+        </div>
+
+        <div class="grid-2">
+            <!-- Supply Chain -->
+            <div class="glass-card" style="border-left: 4px solid var(--accent)">
+                <h2>📦 Global Supply Chain</h2>
+                <p class="mt-1 text-muted" style="line-height:1.6;">
+                    <strong>Architecture:</strong> Uses Layer 3 Solidity Contract (`supplychain.sol`).<br>
+                    <strong>Mechanism:</strong> Products are minted as unique identifiers. Logistics providers call `updateStatus()` executing state changes via Web3.
+                </p>
+                <div class="mt-1 p-1" style="background:rgba(0,0,0,0.3); border-radius:4px;">
+                    <div style="font-family:monospace; color:var(--success)">> AddProduct("Pharmaceuticals_Batch_1")</div>
+                    <div style="font-family:monospace; color:var(--warning)">> UpdateStatus(1, "In Transit", 0xCarrier)</div>
+                </div>
+            </div>
+
+            <!-- Decentralized Banking -->
+            <div class="glass-card" style="border-left: 4px solid var(--primary)">
+                <h2>🏦 Decentralized Banking</h2>
+                <p class="mt-1 text-muted" style="line-height:1.6;">
+                    <strong>Architecture:</strong> Hybrid model.<br>
+                    <strong>Mechanism:</strong> Traditional ledgers are replaced by the Layer 1 custom chain. Cross-border settlements execute without intermediary clearinghouses, settling instantly upon PoW consensus.
+                </p>
+            </div>
+
+            <!-- Health Insurance -->
+            <div class="glass-card" style="border-left: 4px solid var(--secondary)">
+                <h2>🏥 Health Insurance Data</h2>
+                <p class="mt-1 text-muted" style="line-height:1.6;">
+                    <strong>Architecture:</strong> Layer 1 Custom Chain (Zero-value transactions).<br>
+                    <strong>Mechanism:</strong> Patient records are hashed (SHA-256). The hash is broadcasted to the chain. Providers query the chain to verify data integrity without exposing raw PII (Privacy by design).
+                </p>
+            </div>
+
+            <!-- Risks Dashboard -->
+            <div class="glass-card" style="border: 1px solid var(--danger)">
+                <h2 style="color:var(--danger)">⚠️ Network Risk Assessment</h2>
+                <ul class="mt-1 text-muted" style="padding-left:1.5rem; line-height:1.8;">
+                    <li><strong>Scalability Limits:</strong> L1 simulated chain processes sequentially. High volume leads to mempool congestion.</li>
+                    <li><strong>Energy Profile:</strong> Layer 1 PoW consensus requires extensive CPU cycles, simulating high real-world energy burn. Layer 3 (Ethereum PoS) mitigates this.</li>
+                    <li><strong>Data Availability:</strong> Storing large files directly on-chain is prohibitive. HDFE enforces IPFS hashing conventions for payload referencing.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

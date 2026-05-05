@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HDFE - Smart Contracts</title>
+    <link rel="stylesheet" href="../../css/style.css">
+    <script src="../../libs/ethers.min.js"></script>
+    <script src="../../web3/metamask.js"></script>
+    <script src="../../web3/contract.js"></script>
+    <script src="../components/navbar.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header-section">
+            <h1>Smart Contract Playground</h1>
+            <p>Direct Web3 interaction with Solidity contracts deployed on Layer 3.</p>
+        </div>
+
+        <div class="grid-3">
+            <!-- Token Contract -->
+            <div class="glass-card">
+                <h3 style="color:var(--primary)">ERC20 Token System</h3>
+                <p class="text-muted" style="font-size:0.8rem; margin-bottom:1rem;">Mint and transfer custom assets.</p>
+                
+                <div class="form-group">
+                    <label>Contract Address</label>
+                    <input type="text" id="token-addr" class="form-control" placeholder="0x..." value="0x1234567890123456789012345678901234567890">
+                </div>
+                <div class="form-group">
+                    <label>Recipient Address</label>
+                    <input type="text" id="token-to" class="form-control" placeholder="0x...">
+                </div>
+                <div class="form-group">
+                    <label>Amount</label>
+                    <input type="number" id="token-amt" class="form-control" placeholder="0">
+                </div>
+                <button class="btn btn-primary w-100" onclick="transferToken()">Execute Transfer()</button>
+            </div>
+
+            <!-- Escrow Contract -->
+            <div class="glass-card">
+                <h3 style="color:var(--accent)">Escrow Contract</h3>
+                <p class="text-muted" style="font-size:0.8rem; margin-bottom:1rem;">Trustless funds locking mechanisms.</p>
+                
+                <div class="form-group">
+                    <label>Contract Address</label>
+                    <input type="text" id="escrow-addr" class="form-control" placeholder="0x..." value="0x2234567890123456789012345678901234567890">
+                </div>
+                <button class="btn btn-secondary w-100 mb-1" onclick="escrowAction('deposit')">Deposit Funds (Payer)</button>
+                <button class="btn btn-primary w-100 mb-1" style="background:var(--success)" onclick="escrowAction('release')">Release Funds (Arbiter)</button>
+                <button class="btn btn-primary w-100" style="background:var(--danger)" onclick="escrowAction('refund')">Refund (Arbiter)</button>
+            </div>
+
+            <!-- Loan Contract -->
+            <div class="glass-card">
+                <h3 style="color:var(--secondary)">DeFi Lending System</h3>
+                <p class="text-muted" style="font-size:0.8rem; margin-bottom:1rem;">Request and approve over-collateralized loans.</p>
+                
+                <div class="form-group">
+                    <label>Contract Address</label>
+                    <input type="text" id="loan-addr" class="form-control" placeholder="0x..." value="0x3234567890123456789012345678901234567890">
+                </div>
+                <div class="form-group">
+                    <label>Loan Amount (ETH)</label>
+                    <input type="number" id="loan-amt" class="form-control" placeholder="1.0">
+                </div>
+                <button class="btn btn-secondary w-100 mb-1" onclick="loanAction('request')">Request Loan</button>
+                <button class="btn btn-primary w-100" onclick="loanAction('approve')">Approve Loan (Lender)</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // These functions execute real ethers.js logic, wrapped in try-catch 
+        // to handle cases where contracts aren't physically deployed on the user's local Ganache yet.
+
+        async function transferToken() {
+            try {
+                const addr = document.getElementById('token-addr').value;
+                const to = document.getElementById('token-to').value;
+                const amt = document.getElementById('token-amt').value;
+                
+                const contract = await ContractManager.getTokenContract(addr);
+                // Call real contract
+                const tx = await contract.transfer(to, ethers.utils.parseUnits(amt, 18));
+                showToast(`Tx Sent! Hash: ${tx.hash}`);
+            } catch(e) {
+                console.error(e);
+                showToast("Contract execution failed. (Deploy contract on local node first)", "error");
+            }
+        }
+
+        async function escrowAction(action) {
+            try {
+                const addr = document.getElementById('escrow-addr').value;
+                const contract = await ContractManager.getEscrowContract(addr);
+                
+                let tx;
+                if(action === 'deposit') tx = await contract.deposit({value: ethers.utils.parseEther("1.0")});
+                if(action === 'release') tx = await contract.releaseFunds();
+                if(action === 'refund') tx = await contract.refund();
+                
+                showToast(`Tx Sent! Hash: ${tx.hash}`);
+            } catch(e) {
+                console.error(e);
+                showToast("Contract execution failed. (Deploy contract on local node first)", "error");
+            }
+        }
+
+        async function loanAction(action) {
+            try {
+                const addr = document.getElementById('loan-addr').value;
+                const amt = document.getElementById('loan-amt').value;
+                const contract = await ContractManager.getLoanContract(addr);
+                
+                let tx;
+                if(action === 'request') tx = await contract.requestLoan(ethers.utils.parseEther(amt), 5, 86400); // 5%, 1 day
+                if(action === 'approve') tx = await contract.approveLoan(1, {value: ethers.utils.parseEther(amt)});
+                
+                showToast(`Tx Sent! Hash: ${tx.hash}`);
+            } catch(e) {
+                console.error(e);
+                showToast("Contract execution failed. (Deploy contract on local node first)", "error");
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HDFE - Analytics</title>
+    <link rel="stylesheet" href="../../css/style.css">
+    
+    <!-- Local libraries -->
+    <script src="../../utils/crypto.js"></script>
+    <script src="../../blockchain/merkle.js"></script>
+    <script src="../../blockchain/block.js"></script>
+    <script src="../../blockchain/blockchain.js"></script>
+    <script src="../../network/node.js"></script>
+    <script src="../../libs/chart.min.js"></script>
+    <script src="../components/navbar.js"></script>
+
+    <style>
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-section">
+            <h1>Network Analytics</h1>
+            <p>Real-time telemetry and network metrics from the Layer 1 custom chain.</p>
+        </div>
+
+        <div class="grid-2">
+            <div class="glass-card">
+                <h2>Block Growth Over Time</h2>
+                <div class="chart-container mt-1">
+                    <canvas id="blockChart"></canvas>
+                </div>
+            </div>
+
+            <div class="glass-card">
+                <h2>Transactions Per Block</h2>
+                <div class="chart-container mt-1">
+                    <canvas id="txChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const net = NetworkSimulator.init();
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const chain = net.mainNode.blockchain.chain;
+            
+            const labels = chain.map(b => `Block ${b.index}`);
+            const txData = chain.map(b => b.transactions.length);
+            // Simulate timestamps growth if created too fast
+            let cumulative = 0;
+            const growthData = chain.map(b => { cumulative++; return cumulative; });
+
+            // Chart global defaults
+            Chart.defaults.color = '#94a3b8';
+            Chart.defaults.font.family = 'Inter';
+
+            // Block Growth Chart
+            new Chart(document.getElementById('blockChart'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Total Blocks',
+                        data: growthData,
+                        borderColor: '#6366f1',
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: { maintainAspectRatio: false }
+            });
+
+            // TX Chart
+            new Chart(document.getElementById('txChart'), {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Tx Count',
+                        data: txData,
+                        backgroundColor: '#14b8a6',
+                    }]
+                },
+                options: { maintainAspectRatio: false }
+            });
+        });
+    </script>
+</body>
+</html>

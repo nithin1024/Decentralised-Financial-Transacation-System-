@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HDFE - Mining</title>
+    <link rel="stylesheet" href="../../css/style.css">
+    <script src="../../utils/crypto.js"></script>
+    <script src="../../blockchain/merkle.js"></script>
+    <script src="../../blockchain/block.js"></script>
+    <script src="../../blockchain/blockchain.js"></script>
+    <script src="../../network/node.js"></script>
+    <script src="../components/navbar.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header-section">
+            <h1>Mining System (PoW)</h1>
+            <p>Proof-of-Work simulation solving cryptographic puzzles to secure the network.</p>
+        </div>
+
+        <div class="grid-2">
+            <div class="glass-card">
+                <h2>Pending Transactions Pool</h2>
+                <div id="pending-txs" class="mt-1" style="max-height: 200px; overflow-y:auto; background:rgba(0,0,0,0.2); padding:1rem; border-radius:8px;">
+                    <!-- JS populated -->
+                </div>
+
+                <div class="form-group mt-2">
+                    <label>Network Difficulty Level</label>
+                    <input type="number" id="diff-input" class="form-control" min="1" max="5">
+                </div>
+
+                <button class="btn btn-primary w-100" id="btn-mine" onclick="startMining()">Begin PoW Mining</button>
+            </div>
+
+            <div class="glass-card">
+                <h2>Console Output</h2>
+                <div class="mining-animation" id="mining-anim" style="display:none; height:100px;">
+                    <i class="gear">⚙️</i>
+                    <i class="gear" style="animation-direction: reverse; color:var(--accent)">⚙️</i>
+                </div>
+                <div class="mining-log mt-1" id="mining-log" style="height: 280px;">
+                    <div style="color:var(--text-muted)">Waiting to start...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const net = NetworkSimulator.init();
+
+        document.addEventListener("DOMContentLoaded", () => {
+            document.getElementById('diff-input').value = net.mainNode.blockchain.difficulty;
+            renderPending();
+        });
+
+        function renderPending() {
+            const txs = net.mainNode.blockchain.pendingTransactions;
+            const container = document.getElementById('pending-txs');
+            if(txs.length === 0) {
+                container.innerHTML = "<div style='color:var(--text-muted)'>No pending transactions in mempool.</div>";
+                return;
+            }
+            container.innerHTML = txs.map(t => `<div style="border-bottom:1px solid var(--border); padding-bottom:0.5rem; margin-bottom:0.5rem; font-family:monospace; font-size:0.8rem;">From: ${t.from.substring(0,10)}... | Amount: ${t.amount}</div>`).join('');
+        }
+
+        function startMining() {
+            const pub = localStorage.getItem('l1_pub');
+            if(!pub) return showToast("Create an L1 Wallet first to receive rewards.", "error");
+
+            net.mainNode.blockchain.difficulty = parseInt(document.getElementById('diff-input').value);
+            
+            document.getElementById('btn-mine').disabled = true;
+            document.getElementById('mining-anim').style.display = 'flex';
+            
+            const log = document.getElementById('mining-log');
+            log.innerHTML = `<div style="color:var(--warning)">[SYSTEM] Initializing SHA-256 Miners...</div>`;
+            log.innerHTML += `<div>[SYSTEM] Target Difficulty: ${net.mainNode.blockchain.difficulty}</div>`;
+
+            setTimeout(() => {
+                try {
+                    let minedBlock = net.mainNode.blockchain.minePendingTransactions(pub, (nonce, hash, time) => {
+                        if(time) return; // final call
+                        log.innerHTML += `<div>[HASH] ${nonce} | ${hash.substring(0,30)}...</div>`;
+                        log.scrollTop = log.scrollHeight;
+                    });
+
+                    log.innerHTML += `<div style="color:var(--success); margin-top:1rem;">[SUCCESS] Block ${minedBlock.index} mined!</div>`;
+                    
+                    // Broadcast block to P2P network
+                    net.mainNode.broadcastBlock(minedBlock);
+                    net.save();
+                    
+                    document.getElementById('mining-anim').style.display = 'none';
+                    document.getElementById('btn-mine').disabled = false;
+                    renderPending();
+                    showToast("Block Mined & Broadcasted!");
+
+                } catch(e) {
+                    log.innerHTML += `<div style="color:var(--danger)">[ERROR] ${e.message}</div>`;
+                    document.getElementById('mining-anim').style.display = 'none';
+                    document.getElementById('btn-mine').disabled = false;
+                }
+            }, 100);
+        }
+    </script>
+</body>
+</html>

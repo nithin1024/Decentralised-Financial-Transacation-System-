@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HDFE - Wallet & Web3</title>
+    <link rel="stylesheet" href="../../css/style.css">
+    <script src="../../utils/crypto.js"></script>
+    <script src="../../blockchain/merkle.js"></script>
+    <script src="../../blockchain/block.js"></script>
+    <script src="../../blockchain/blockchain.js"></script>
+    <script src="../../network/node.js"></script>
+    <script src="../../libs/ethers.min.js"></script>
+    <script src="../../web3/metamask.js"></script>
+    <script src="../components/navbar.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header-section">
+            <h1>Identity & Wallet Management</h1>
+            <p>Manage Layer 1 cryptographic keys and Layer 3 Web3 injections.</p>
+        </div>
+
+        <div class="grid-2">
+            <!-- Layer 1 Wallet -->
+            <div class="glass-card">
+                <h2 style="color:var(--accent)">Layer 1 Local Wallet</h2>
+                <p class="mt-1 mb-2 text-muted">Offline Public/Private key pair used for the custom JS blockchain simulation.</p>
+                
+                <div id="l1-wallet" style="display:none;">
+                    <div class="form-group">
+                        <label>Public Address</label>
+                        <div class="hash-container"><span id="l1-pub"></span></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Private Key</label>
+                        <div class="hash-container"><span id="l1-priv" style="filter: blur(4px);" onmouseover="this.style.filter='none'" onmouseout="this.style.filter='blur(4px)'"></span></div>
+                    </div>
+                    <div class="stat-card mt-2">
+                        <div class="stat-label">L1 Balance</div>
+                        <div class="stat-value" id="l1-balance" style="color:var(--success)">$0</div>
+                    </div>
+                </div>
+                
+                <button class="btn btn-secondary w-100 mt-2" onclick="generateL1Wallet()">Generate New L1 Wallet</button>
+            </div>
+
+            <!-- Layer 3 Web3 -->
+            <div class="glass-card">
+                <h2 style="color:var(--primary)">Layer 3 Ethereum (MetaMask)</h2>
+                <p class="mt-1 mb-2 text-muted">Web3 injected wallet connecting to local Ganache or testnets.</p>
+                
+                <div id="l3-wallet" style="display:none;">
+                    <div class="form-group">
+                        <label>Connected Address</label>
+                        <div class="hash-container"><span id="l3-address"></span></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Network ID</label>
+                        <div class="hash-container"><span id="l3-network"></span></div>
+                    </div>
+                    <div class="stat-card mt-2">
+                        <div class="stat-label">ETH Balance</div>
+                        <div class="stat-value" id="l3-balance" style="color:var(--primary)">0.00 ETH</div>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary w-100 mt-2" id="btn-mm" onclick="connectMetaMask()">Connect MetaMask</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const net = NetworkSimulator.init();
+
+        function updateUI() {
+            // L1 Wallet
+            const priv = localStorage.getItem('l1_priv');
+            const pub = localStorage.getItem('l1_pub');
+            if(priv && pub) {
+                document.getElementById('l1-wallet').style.display = 'block';
+                document.getElementById('l1-pub').innerText = pub;
+                document.getElementById('l1-priv').innerText = priv;
+                document.getElementById('l1-balance').innerText = "$" + net.mainNode.blockchain.getBalanceOfAddress(pub);
+            }
+
+            // L3 Wallet
+            const mmAcc = MetaMaskIntegration.getAccount();
+            if(mmAcc) {
+                document.getElementById('l3-wallet').style.display = 'block';
+                document.getElementById('l3-address').innerText = mmAcc;
+                document.getElementById('btn-mm').style.display = 'none';
+                
+                // Fetch live balance
+                MetaMaskIntegration.getBalance(mmAcc).then(bal => {
+                    document.getElementById('l3-balance').innerText = bal + " ETH";
+                }).catch(e => console.error(e));
+                
+                if(window.ethereum) {
+                    document.getElementById('l3-network').innerText = window.ethereum.networkVersion || "Ganache Local";
+                }
+            }
+        }
+
+        function generateL1Wallet() {
+            const keys = CryptoUtils.generateKeyPair();
+            localStorage.setItem('l1_priv', keys.privateKey);
+            localStorage.setItem('l1_pub', keys.publicKey);
+            showToast("Layer 1 Wallet Generated!");
+            updateUI();
+        }
+
+        async function connectMetaMask() {
+            try {
+                const data = await MetaMaskIntegration.connect();
+                showToast("Connected to MetaMask!");
+                updateUI();
+            } catch(e) {
+                showToast(e.message, "error");
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", updateUI);
+    </script>
+</body>
+</html>
