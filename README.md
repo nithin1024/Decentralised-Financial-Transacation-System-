@@ -4,34 +4,57 @@ Welcome to the **Hybrid Decentralized Financial Ecosystem**. This project is a c
 
 ---
 
-## 🚀 How to Run and Work on This Project
+## 🚀 How to Start the Project
 
 This project requires **zero external dependencies** and no complex build steps (no Node.js packages to install, no React/Vite builds). It is built using pure HTML, CSS, and Vanilla JavaScript with bundled libraries.
 
-### Step 1: Start the Local Server
-Because the project uses ES6 Modules and fetches local files, it must be run over a local web server (not just double-clicking the HTML file).
 1. Open your terminal in the root of the `Blockchain` folder.
 2. Run a simple HTTP server. For example:
    ```bash
    npx http-server -p 5500 .
    ```
    *(Alternatively, you can use `python -m http.server 5500` or the VS Code "Live Server" extension).*
-
-### Step 2: Access the Platform
-1. Open your browser and navigate **strictly** to: **http://localhost:5500** 
+3. Open your browser and navigate **strictly** to: **http://localhost:5500** 
    *(Do NOT use `127.0.0.1` as MetaMask enforces strict security policies on IP addresses vs hostnames).*
-2. You will land on the **Dashboard (index.html)**.
 
-### Step 3: Configure Your Wallets
-1. Navigate to the **Wallet (Web3)** page.
-2. **Layer 1:** Click **Generate New L1 Wallet**. This creates an offline cryptographic Public/Private key pair used for the custom JavaScript blockchain.
-3. **Layer 3:** Click **Connect MetaMask**. This will prompt your browser extension to connect. *(Ensure your MetaMask is connected to a local Ganache instance or a testnet like Sepolia).*
+---
 
-### Step 4: Test the Ecosystem (Step-by-Step)
-1. **Send Funds:** Go to the **Transfer** page. Use your L1 wallet to sign a transaction to a dummy address.
-2. **Mine the Block:** Go to the **Mining** page. You will see your transaction in the "Pending Pool". Click **Begin PoW Mining**. The system will perform SHA-256 calculations to solve the block.
-3. **Verify Ledger:** Go to the **Explorer** page. You will see the immutable ledger, the newly generated Merkle Root, and your confirmed transaction.
-4. **Smart Contracts:** Go to the **Contracts** page to interact directly with Solidity smart contracts via your connected MetaMask wallet.
+## 🧑‍💻 How to Work with the Website (User Tutorial)
+
+To fully demonstrate the capabilities of the Hybrid Decentralized Financial Ecosystem to a professor or evaluator, follow this exact click-by-click workflow:
+
+### Phase 1: Identity Creation (Wallet Setup)
+1. Start at the **Dashboard**. You'll notice your "Layer 1 Blocks" is at 1 (the Genesis block), and Layer 3 (MetaMask) says "Not Connected".
+2. Click **Wallet (Web3)** in the navigation bar.
+3. Under the **Layer 1 Local Wallet** card, click **Generate New L1 Wallet**. 
+   - *What happens:* The system generates an offline cryptographic Public/Private key pair. You will see your balance is $0.
+4. Under the **Layer 3 Ethereum** card, click **Connect MetaMask**. 
+   - *What happens:* Your browser extension will pop up. Approve the connection. Your ETH address and live balance will now be displayed.
+
+### Phase 2: Creating a Transaction
+1. Click **Transfer** in the navigation bar.
+2. Under the **Layer 1 Transfer** section, your "Recipient Address" can be any dummy text (e.g., `0xRecipient123`).
+3. Enter an amount (e.g., `50`).
+4. Click **Sign & Broadcast L1**.
+   - *What happens:* The system uses your L1 Private Key to cryptographically sign the transaction. It is then broadcasted to the local P2P network and sits in the "Pending Pool".
+
+### Phase 3: Mining & Consensus (Proof of Work)
+1. Click **Mining** in the navigation bar.
+2. Look at the **Pending Transactions Pool**. You will see the transaction you just created waiting to be processed.
+3. You can adjust the **Network Difficulty Level** (leave it at 3 for a quick mine, or increase it to 4/5 to simulate heavier computational load).
+4. Click **Begin PoW Mining**.
+   - *What happens:* The console will output the real-time SHA-256 hash calculations. Once a hash with the correct number of leading zeros is found, the block is mined! You will also receive a network block reward to your L1 wallet.
+
+### Phase 4: Verifying the Ledger
+1. Click **Explorer** in the navigation bar.
+2. You will see your newly mined block added to the top of the chain.
+3. Notice the **Merkle Root**, the **Previous Hash** cryptographically linking back to the Genesis block, and the valid **Block Hash**.
+
+### Phase 5: Smart Contracts & Advanced DApps
+1. Click **Contracts** in the navigation bar.
+2. Here you can interact with the deployed Solidity contracts (Escrow, Loan, Token) using your connected MetaMask wallet. Input a dummy address and click the buttons to trigger real Web3 transactions via your browser extension.
+3. Click **DApps** to view the conceptual implementations of Global Supply Chain tracking, Decentralized Banking, Health Insurance, and a breakdown of Network Risks.
+4. Click **Analytics** to view live-updating graphical charts of your network's block growth and transaction density.
 
 ---
 
@@ -61,28 +84,9 @@ Integrates the traditional Ethereum Web3 stack for advanced DeFi operations.
 
 ---
 
-## 🖥️ Frontend Modules (The 8 Pages)
-
-All UI pages are located in `/frontend/pages/` and styled via `/css/style.css` using modern glassmorphism design.
-
-1. **`index.html` (Dashboard)**: Central hub showing network telemetry, active nodes, and current block heights.
-2. **`wallet.html`**: Dual identity manager for L1 local keys and L3 MetaMask accounts.
-3. **`transaction.html`**: Cross-layer transfer interface.
-4. **`blockchain.html` (Explorer)**: Visualizes the immutable ledger, showing how blocks are cryptographically linked.
-5. **`mining.html`**: Real-time PoW simulation terminal. Adjust network difficulty and watch the hash brute-forcing live.
-6. **`contracts.html`**: Smart Contract playground. Execute `deposit()`, `release()`, `transfer()`, and `requestLoan()` via Web3.
-7. **`applications.html`**: Demonstrates industry-specific use cases (Supply Chain, Banking, Health Insurance) and explains network risks (Scalability, Energy).
-8. **`analytics.html`**: Graphical charts powered by `chart.min.js` showing Block Growth and Transactions-per-Block metrics over time.
-
----
-
 ## 📚 Academic Concept Coverage
 
 This project strictly adheres to theoretical blockchain concepts:
 - **Unit 1 (Fundamentals):** Showcases Keys as Identity, Digital Signatures, SHA-256 Hashing, and PoW Consensus in `blockchain.js` and `crypto.js`.
 - **Unit 2 (Applications):** The `applications.html` module conceptualizes Trade Finance, Supply Chain tracking, and analyzes architectural risks like Latency and Energy Consumption.
 - **Unit 3 (Deployment & Advanced):** Features a live Mining system, Fork resolution logic, Merkle Trees (SegWit foundation), and direct Smart Contract execution via Web3.
-
----
-
-*Note: The `libs/` folder contains offline versions of `ethers.min.js` and `chart.min.js` to ensure the project works perfectly in completely offline, sandboxed environments.*
