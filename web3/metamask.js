@@ -14,21 +14,50 @@ class MetaMaskIntegration {
                 return { account, chainId };
             } catch (error) {
                 console.error("MetaMask Connection Error:", error);
-                throw error;
+                throw new Error(error.message || "User denied account access or error occurred");
             }
         } else {
-            throw new Error("MetaMask is not installed. Please install it to interact with Layer 3.");
+            throw new Error("MetaMask is not installed. Please install it and refresh the page.");
+        }
+    }
+
+    static async initAccount() {
+        if (typeof window.ethereum !== 'undefined') {
+            try {
+                const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                if (accounts && accounts.length > 0) {
+                    localStorage.setItem('mm_account', accounts[0]);
+                } else {
+                    localStorage.removeItem('mm_account');
+                }
+                
+                window.ethereum.on('accountsChanged', (newAccounts) => {
+                    if (newAccounts.length > 0) {
+                        localStorage.setItem('mm_account', newAccounts[0]);
+                        window.location.reload();
+                    } else {
+                        localStorage.removeItem('mm_account');
+                        window.location.reload();
+                    }
+                });
+            } catch(e) {
+                console.error("Error fetching accounts", e);
+            }
         }
     }
 
     static async getBalance(account) {
         if (typeof window.ethereum !== 'undefined') {
-            const balanceHex = await window.ethereum.request({ 
-                method: 'eth_getBalance', 
-                params: [account, 'latest'] 
-            });
-            // Convert Wei to Eth (simplified offline)
-            return (parseInt(balanceHex, 16) / 1e18).toFixed(4);
+            try {
+                const balanceHex = await window.ethereum.request({ 
+                    method: 'eth_getBalance', 
+                    params: [account, 'latest'] 
+                });
+                return (parseInt(balanceHex, 16) / 1e18).toFixed(4);
+            } catch(e) {
+                console.error(e);
+                return "0.0000";
+            }
         }
         return "0.0000";
     }
@@ -52,8 +81,10 @@ class MetaMaskIntegration {
                 return txHash;
             } catch(e) {
                 console.error("Tx Error", e);
-                throw e;
+                throw new Error(e.message || "Transaction failed");
             }
+        } else {
+            throw new Error("MetaMask is not installed.");
         }
     }
 
@@ -65,3 +96,8 @@ class MetaMaskIntegration {
         localStorage.removeItem('mm_account');
     }
 }
+
+// Auto-initialize on load
+document.addEventListener("DOMContentLoaded", () => {
+    MetaMaskIntegration.initAccount();
+});
