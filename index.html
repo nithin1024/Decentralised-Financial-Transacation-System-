@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DFTS - Dashboard</title>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Scripts -->
+    <script src="js/sha256.js"></script>
+    <script src="js/blockchain.js"></script>
+    <script src="js/wallet.js"></script>
+    <script src="js/app.js" defer></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header-section">
+            <h1>Decentralized Financial Transaction System</h1>
+            <p>A pure JS simulation demonstrating Blockchain Fundamentals (Unit 1), Application Use Cases (Unit 2), and Deployment Concepts (Unit 3).</p>
+        </div>
+
+        <div class="grid-3 mb-2">
+            <div class="glass-card stat-card">
+                <i>⛓️</i>
+                <div class="stat-value" id="stat-blocks">0</div>
+                <div class="stat-label">Blocks Mined</div>
+            </div>
+            <div class="glass-card stat-card">
+                <i>📝</i>
+                <div class="stat-value" id="stat-pending">0</div>
+                <div class="stat-label">Pending Transactions</div>
+            </div>
+            <div class="glass-card stat-card">
+                <i>⚡</i>
+                <div class="stat-value" id="stat-valid">Valid</div>
+                <div class="stat-label">Network Status</div>
+            </div>
+        </div>
+
+        <div class="grid-2">
+            <div class="glass-card">
+                <h2>Network Overview</h2>
+                <p class="mt-1" style="color:var(--text-muted); line-height: 1.6;">
+                    <strong>Type:</strong> Public Blockchain<br>
+                    <strong>Consensus:</strong> Proof of Work (PoW)<br>
+                    <strong>Difficulty:</strong> <span id="stat-diff">3</span><br>
+                    <strong>Mining Reward:</strong> 50 Coins<br>
+                    <strong>Decentralization:</strong> 1 Local Node Simulated
+                </p>
+                <button class="btn btn-primary w-100 mt-2" onclick="window.location.href='create-transaction.html'">
+                    Create New Transaction
+                </button>
+            </div>
+            
+            <div class="glass-card">
+                <h2>System Architecture</h2>
+                <p class="mt-1" style="color:var(--text-muted); line-height: 1.6;">
+                    The DFTS is built using a layered architecture:
+                </p>
+                <div style="background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+                    <div style="border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; margin-bottom: 0.5rem;"><strong>Application Layer:</strong> UI, DApps (Supply Chain, etc.)</div>
+                    <div style="border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; margin-bottom: 0.5rem;"><strong>Smart Contract Layer:</strong> Transaction Logic</div>
+                    <div style="border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; margin-bottom: 0.5rem;"><strong>Consensus Layer:</strong> Proof of Work, Difficulty</div>
+                    <div><strong>Network/Data Layer:</strong> P2P Simulation, Blocks, Hashes</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            document.getElementById('stat-blocks').innerText = DFTS.chain.length;
+            document.getElementById('stat-pending').innerText = DFTS.pendingTransactions.length;
+            document.getElementById('stat-diff').innerText = DFTS.difficulty;
+            
+            const isValid = DFTS.isChainValid();
+            const validEl = document.getElementById('stat-valid');
+            validEl.innerText = isValid ? "Secure" : "Compromised";
+            validEl.style.color = isValid ? "var(--success)" : "var(--danger)";
+        });
+    </script>
+</body>
+</html>

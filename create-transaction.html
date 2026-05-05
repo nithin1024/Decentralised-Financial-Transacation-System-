@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DFTS - Create Transaction</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/sha256.js"></script>
+    <script src="js/blockchain.js"></script>
+    <script src="js/wallet.js"></script>
+    <script src="js/app.js" defer></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header-section">
+            <h1>Create Transaction</h1>
+            <p>Send funds securely using cryptographic digital signatures.</p>
+        </div>
+
+        <div id="no-wallet-msg" class="glass-card text-center" style="display:none;">
+            <h2>Wallet Required</h2>
+            <p class="mt-1 mb-2 text-muted">You need a wallet to sign and send transactions.</p>
+            <button class="btn btn-primary" onclick="window.location.href='wallet.html'">Go to Wallet</button>
+        </div>
+
+        <div id="tx-form-container" class="grid-2" style="display:none;">
+            <div class="glass-card">
+                <h2>New Transfer</h2>
+                <form id="tx-form" class="mt-1" onsubmit="handleSign(event)">
+                    <div class="form-group">
+                        <label>From (Your Public Key)</label>
+                        <input type="text" id="tx-from" class="form-control" disabled>
+                    </div>
+                    <div class="form-group">
+                        <label>To (Recipient Public Key)</label>
+                        <input type="text" id="tx-to" class="form-control" required placeholder="Enter recipient's public key">
+                    </div>
+                    <div class="form-group">
+                        <label>Amount</label>
+                        <input type="number" id="tx-amount" class="form-control" required min="1" step="1" placeholder="0">
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100" id="btn-sign">Sign Transaction</button>
+                </form>
+
+                <div id="signature-section" class="mt-2" style="display:none; background:rgba(0,0,0,0.2); padding:1rem; border-radius:8px;">
+                    <div class="form-group">
+                        <label>Digital Signature</label>
+                        <div class="hash-container"><span id="tx-sig" style="color:var(--success)"></span></div>
+                        <small style="color:var(--text-muted)">Created using your Private Key. Proves authenticity.</small>
+                    </div>
+                    <button class="btn btn-success w-100" style="background:var(--success); color:white" onclick="handleBroadcast()">Broadcast to Network</button>
+                </div>
+            </div>
+
+            <div class="glass-card">
+                <h2>How it Works (Unit 1)</h2>
+                <div class="mt-1" style="color:var(--text-muted); line-height:1.6;">
+                    <p><strong>1. Initiation:</strong> You specify the recipient and amount.</p>
+                    <p class="mt-1"><strong>2. Hashing:</strong> The transaction data is hashed (SHA-256).</p>
+                    <p class="mt-1"><strong>3. Signing:</strong> Your Private Key is used to encrypt the hash, creating a Digital Signature.</p>
+                    <p class="mt-1"><strong>4. Broadcasting:</strong> The transaction is sent to the network (Pending pool).</p>
+                    <p class="mt-1"><strong>5. Validation:</strong> Miners use your Public Key to decrypt the signature and verify the hash matches the data.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentTx = null;
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const wallet = Wallet.getCurrent();
+            if(!wallet) {
+                document.getElementById('no-wallet-msg').style.display = 'block';
+            } else {
+                document.getElementById('tx-form-container').style.display = 'grid';
+                document.getElementById('tx-from').value = wallet.publicKey;
+            }
+        });
+
+        function handleSign(e) {
+            e.preventDefault();
+            const wallet = Wallet.getCurrent();
+            const to = document.getElementById('tx-to').value;
+            const amount = document.getElementById('tx-amount').value;
+
+            try {
+                currentTx = new Transaction(wallet.publicKey, to, amount);
+                currentTx.signTransaction(wallet);
+                
+                document.getElementById('tx-sig').innerText = currentTx.signature;
+                document.getElementById('signature-section').style.display = 'block';
+                document.getElementById('btn-sign').style.display = 'none';
+                
+                showToast("Transaction Signed Successfully!");
+            } catch(err) {
+                showToast(err.message, "error");
+            }
+        }
+
+        function handleBroadcast() {
+            if(!currentTx) return;
+            try {
+                DFTS.addTransaction(currentTx);
+                showToast("Transaction Broadcasted to Network!");
+                setTimeout(() => {
+                    window.location.href = 'mining.html';
+                }, 1500);
+            } catch(err) {
+                showToast(err.message, "error");
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DFTS - Applications</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/sha256.js"></script>
+    <script src="js/blockchain.js"></script>
+    <script src="js/wallet.js"></script>
+    <script src="js/transactions.js"></script>
+    <script src="js/app.js" defer></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header-section">
+            <h1>Blockchain Applications (DApps)</h1>
+            <p>Real-world use cases demonstrating the power of decentralized immutable ledgers (Unit 2).</p>
+        </div>
+
+        <div class="grid-3 mb-2">
+            <!-- Trade Finance -->
+            <div class="glass-card">
+                <h3 style="color:var(--primary); margin-bottom:0.5rem;">Trade Finance</h3>
+                <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1rem;">Smart contracts hold funds in escrow until shipment is verified, reducing fraud.</p>
+                <div class="form-group">
+                    <input type="text" id="tf-seller" class="form-control mb-1" placeholder="Seller Public Key" value="pub_seller_999">
+                    <input type="number" id="tf-amount" class="form-control mb-1" placeholder="Amount ($)" value="1000">
+                    <button class="btn btn-primary w-100" onclick="runTradeFinance()">Execute Contract</button>
+                </div>
+            </div>
+
+            <!-- Supply Chain -->
+            <div class="glass-card">
+                <h3 style="color:var(--secondary); margin-bottom:0.5rem;">Supply Chain</h3>
+                <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1rem;">Track the provenance of goods. Data is immutable and timestamped.</p>
+                <div class="form-group">
+                    <input type="text" id="sc-item" class="form-control mb-1" placeholder="Item ID (e.g., PKG-123)" value="PKG-123">
+                    <input type="text" id="sc-loc" class="form-control mb-1" placeholder="Location" value="Port of Los Angeles">
+                    <button class="btn btn-primary w-100" style="background:var(--secondary)" onclick="runSupplyChain()">Log Shipment</button>
+                </div>
+            </div>
+
+            <!-- Health Insurance -->
+            <div class="glass-card">
+                <h3 style="color:var(--accent); margin-bottom:0.5rem;">Health Insurance</h3>
+                <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1rem;">Patients cryptographically authorize hospitals to access medical records.</p>
+                <div class="form-group">
+                    <input type="text" id="hi-hosp" class="form-control mb-1" placeholder="Hospital Address" value="pub_hospital_555">
+                    <input type="text" id="hi-data" class="form-control mb-1" placeholder="Medical Data Hash" value="0x8f2a...c3">
+                    <button class="btn btn-primary w-100" style="background:var(--accent)" onclick="runHealthInsurance()">Authorize Access</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-card">
+            <h2>Risks & Limitations</h2>
+            <div class="grid-3 mt-1">
+                <div>
+                    <h4 style="color:var(--warning)">Scalability</h4>
+                    <p style="color:var(--text-muted); font-size:0.9rem; margin-top:0.5rem;">Public chains like Bitcoin process ~7 TPS. Visa processes 24,000 TPS. Every node must process every transaction.</p>
+                </div>
+                <div>
+                    <h4 style="color:var(--warning)">Energy Consumption</h4>
+                    <p style="color:var(--text-muted); font-size:0.9rem; margin-top:0.5rem;">Proof-of-Work (PoW) consensus requires massive computational power, leading to environmental concerns.</p>
+                </div>
+                <div>
+                    <h4 style="color:var(--warning)">Latency</h4>
+                    <p style="color:var(--text-muted); font-size:0.9rem; margin-top:0.5rem;">Block times (10 mins for BTC) mean transactions are not instantly final. Network congestion increases wait times.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function checkWallet() {
+            const wallet = Wallet.getCurrent();
+            if(!wallet) {
+                showToast("You need a wallet to interact with DApps!", "error");
+                setTimeout(() => window.location.href='wallet.html', 1500);
+                return null;
+            }
+            return wallet;
+        }
+
+        function runTradeFinance() {
+            const w = checkWallet();
+            if(!w) return;
+            try {
+                const seller = document.getElementById('tf-seller').value;
+                const amt = document.getElementById('tf-amount').value;
+                SmartContract.executeTradeFinance(w, seller, amt);
+                showToast("Trade Finance Contract Executed!");
+            } catch(e) { showToast(e.message, "error"); }
+        }
+
+        function runSupplyChain() {
+            const w = checkWallet();
+            if(!w) return;
+            try {
+                const item = document.getElementById('sc-item').value;
+                const loc = document.getElementById('sc-loc').value;
+                SmartContract.executeSupplyChain(w, item, loc);
+                showToast("Supply Chain Logged to Blockchain!");
+            } catch(e) { showToast(e.message, "error"); }
+        }
+
+        function runHealthInsurance() {
+            const w = checkWallet();
+            if(!w) return;
+            try {
+                const hosp = document.getElementById('hi-hosp').value;
+                const data = document.getElementById('hi-data').value;
+                SmartContract.executeHealthInsurance(w, hosp, data);
+                showToast("Health Data Authorized on Chain!");
+            } catch(e) { showToast(e.message, "error"); }
+        }
+    </script>
+</body>
+</html>

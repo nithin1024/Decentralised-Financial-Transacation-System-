@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DFTS - Blockchain Explorer</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/sha256.js"></script>
+    <script src="js/blockchain.js"></script>
+    <script src="js/wallet.js"></script>
+    <script src="js/app.js" defer></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header-section">
+            <h1>Blockchain Explorer</h1>
+            <p>View the immutable ledger of all blocks and transactions.</p>
+        </div>
+
+        <div id="chain-container" style="max-width: 800px; margin: 0 auto;">
+            <!-- Rendered by JS -->
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const container = document.getElementById('chain-container');
+            let html = '';
+            
+            DFTS.chain.forEach((block) => {
+                const isGenesis = block.index === 0;
+                const time = new Date(block.timestamp).toLocaleString();
+                
+                html += `
+                <div class="glass-card block">
+                    <div class="block-header">
+                        <div class="block-index">Block #${block.index} ${isGenesis ? '<span class="badge badge-warning">Genesis</span>' : ''}</div>
+                        <div style="color:var(--text-muted); font-size:0.9rem;">${time}</div>
+                    </div>
+                    
+                    <div class="grid-2" style="margin-bottom: 1rem;">
+                        <div>
+                            <div style="font-size:0.8rem; color:var(--text-muted)">NONCE</div>
+                            <div style="font-size:1.2rem; font-family:monospace;">${block.nonce}</div>
+                        </div>
+                        <div>
+                            <div style="font-size:0.8rem; color:var(--text-muted)">TRANSACTIONS</div>
+                            <div style="font-size:1.2rem;">${block.transactions.length}</div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div style="font-size:0.8rem; color:var(--text-muted)">PREVIOUS HASH</div>
+                        <div class="hash-container">${block.previousHash}</div>
+                    </div>
+                    <div class="mt-1">
+                        <div style="font-size:0.8rem; color:var(--text-muted)">BLOCK HASH</div>
+                        <div class="hash-container"><span style="color:var(--success)">${block.hash}</span></div>
+                    </div>
+                    
+                    ${block.transactions.length > 0 ? `
+                    <div class="mt-1">
+                        <details style="background:rgba(0,0,0,0.2); padding:0.5rem 1rem; border-radius:4px; cursor:pointer;">
+                            <summary style="font-weight:600; outline:none;">View Transactions</summary>
+                            <div class="table-responsive mt-1">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Type</th>
+                                            <th>From</th>
+                                            <th>To</th>
+                                            <th>Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${block.transactions.map(tx => `
+                                        <tr>
+                                            <td><span class="badge badge-success">${tx.type}</span></td>
+                                            <td style="font-family:monospace; font-size:0.8rem;">${tx.fromAddress ? tx.fromAddress.substring(0,10)+'...' : 'SYSTEM (Reward)'}</td>
+                                            <td style="font-family:monospace; font-size:0.8rem;">${tx.toAddress.substring(0,10)+'...'}</td>
+                                            <td style="font-weight:600;">$${tx.amount}</td>
+                                        </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </details>
+                    </div>
+                    ` : '<div class="mt-1 text-muted" style="font-size:0.9rem;">No transactions in this block.</div>'}
+                </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        });
+    </script>
+</body>
+</html>

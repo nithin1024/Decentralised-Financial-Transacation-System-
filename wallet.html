@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DFTS - Wallet</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/sha256.js"></script>
+    <script src="js/blockchain.js"></script>
+    <script src="js/wallet.js"></script>
+    <script src="js/app.js" defer></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header-section">
+            <h1>Digital Wallet & Identity</h1>
+            <p>In a blockchain network, identity is established via Public and Private cryptographic keys.</p>
+        </div>
+
+        <div class="grid-2">
+            <div class="glass-card">
+                <h2>Your Wallet</h2>
+                <div id="wallet-info" style="display:none;" class="mt-1">
+                    <div class="form-group">
+                        <label>Public Key (Your Address)</label>
+                        <div class="hash-container"><span id="pub-key"></span></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Private Key (Keep Secret!)</label>
+                        <div class="hash-container"><span id="priv-key" style="filter: blur(4px); transition: filter 0.3s; cursor:pointer;" onmouseover="this.style.filter='none'" onmouseout="this.style.filter='blur(4px)'"></span></div>
+                        <small style="color:var(--warning)">Hover to reveal. Never share this key.</small>
+                    </div>
+                    <div class="stat-card mt-2">
+                        <div class="stat-label">Current Balance</div>
+                        <div class="stat-value" style="color: var(--success);" id="wallet-balance">$0</div>
+                    </div>
+                    
+                    <button class="btn btn-secondary w-100 mt-2" onclick="handleLogout()">Destroy Wallet (Logout)</button>
+                </div>
+                
+                <div id="no-wallet" class="mt-1 text-center">
+                    <p style="color:var(--text-muted); margin-bottom: 1rem;">You don't have a wallet yet. Create one to participate in the network.</p>
+                    <button class="btn btn-primary" onclick="handleCreateWallet()">Generate New Key Pair</button>
+                </div>
+            </div>
+            
+            <div class="glass-card">
+                <h2>Identity on Blockchain</h2>
+                <p class="mt-1" style="color:var(--text-muted); line-height: 1.6;">
+                    Unlike traditional systems, blockchain does not use usernames or passwords. Instead, mathematical <strong>Key Pairs</strong> are used:
+                </p>
+                <ul style="color:var(--text-muted); margin-top:1rem; padding-left: 1.5rem; line-height: 1.8;">
+                    <li><strong>Public Key:</strong> Acts as your address. Others use it to send you funds.</li>
+                    <li><strong>Private Key:</strong> Used to create Digital Signatures. Proves you own the funds.</li>
+                </ul>
+                <div style="background: rgba(20, 184, 166, 0.1); border-left: 4px solid var(--accent); padding: 1rem; margin-top: 1rem; border-radius: 4px;">
+                    <strong>Security Note:</strong> If you lose your private key, your funds are permanently lost. If someone else gets it, they can spend your funds.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function updateUI() {
+            const wallet = Wallet.getCurrent();
+            if(wallet) {
+                document.getElementById('wallet-info').style.display = 'block';
+                document.getElementById('no-wallet').style.display = 'none';
+                
+                document.getElementById('pub-key').innerText = wallet.publicKey;
+                document.getElementById('priv-key').innerText = wallet.privateKey;
+                
+                const balance = DFTS.getBalanceOfAddress(wallet.publicKey);
+                document.getElementById('wallet-balance').innerText = `$${balance}`;
+            } else {
+                document.getElementById('wallet-info').style.display = 'none';
+                document.getElementById('no-wallet').style.display = 'block';
+            }
+        }
+
+        function handleCreateWallet() {
+            Wallet.createNew();
+            showToast("Wallet Created Successfully!");
+            updateUI();
+            updateNavWallet();
+        }
+
+        function handleLogout() {
+            if(confirm("Are you sure? This will destroy your current keys from local storage.")) {
+                Wallet.logout();
+                showToast("Wallet Destroyed", "warning");
+                updateUI();
+                updateNavWallet();
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", updateUI);
+    </script>
+</body>
+</html>

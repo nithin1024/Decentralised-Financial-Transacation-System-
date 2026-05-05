@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DFTS - Mining</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/sha256.js"></script>
+    <script src="js/blockchain.js"></script>
+    <script src="js/wallet.js"></script>
+    <script src="js/app.js" defer></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header-section">
+            <h1>Mining Simulator</h1>
+            <p>Demonstrating Proof-of-Work Consensus and Block Creation.</p>
+        </div>
+
+        <div class="grid-2">
+            <div class="glass-card">
+                <h2>Pending Transactions</h2>
+                <div id="pending-list" class="mt-1" style="max-height: 300px; overflow-y: auto;">
+                    <!-- Populated by JS -->
+                </div>
+                
+                <div class="form-group mt-2">
+                    <label>Network Difficulty</label>
+                    <input type="number" id="mining-diff" class="form-control" value="3" min="1" max="5">
+                    <small style="color:var(--text-muted)">Higher difficulty requires more computational power (Zeros at start of hash).</small>
+                </div>
+                
+                <button class="btn btn-primary w-100 mt-1" id="btn-mine" onclick="startMining()">Start Mining Process</button>
+            </div>
+
+            <div class="glass-card">
+                <h2>Mining Console</h2>
+                <div class="mining-animation" id="mining-anim" style="display:none;">
+                    <i class="gear">⚙️</i>
+                    <i class="gear" style="animation-direction: reverse; color:var(--secondary)">⚙️</i>
+                </div>
+                <div class="mining-log mt-1" id="mining-log">
+                    <div style="color:var(--text-muted)">System Idle. Waiting for mining to start...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            renderPending();
+            document.getElementById('mining-diff').value = DFTS.difficulty;
+        });
+
+        function renderPending() {
+            const list = document.getElementById('pending-list');
+            if (DFTS.pendingTransactions.length === 0) {
+                list.innerHTML = `<div style="color:var(--text-muted); padding:1rem; text-align:center;">No pending transactions.</div>`;
+                return;
+            }
+            
+            let html = '';
+            DFTS.pendingTransactions.forEach((tx, idx) => {
+                html += `
+                <div style="background:rgba(0,0,0,0.2); padding:1rem; border-radius:8px; margin-bottom:0.5rem; border-left:3px solid var(--accent)">
+                    <div style="font-size:0.8rem; color:var(--text-muted)">Type: ${tx.type}</div>
+                    <div><strong>Amount:</strong> $${tx.amount}</div>
+                    <div class="hash-container mt-1">From: <span>${tx.fromAddress ? tx.fromAddress.substring(0,15)+'...' : 'System'}</span></div>
+                </div>`;
+            });
+            list.innerHTML = html;
+        }
+
+        function startMining() {
+            const wallet = Wallet.getCurrent();
+            if(!wallet) {
+                showToast("You need a wallet to receive mining rewards!", "error");
+                setTimeout(() => window.location.href='wallet.html', 1500);
+                return;
+            }
+
+            DFTS.difficulty = parseInt(document.getElementById('mining-diff').value);
+            DFTS.saveToStorage();
+
+            document.getElementById('btn-mine').disabled = true;
+            document.getElementById('mining-anim').style.display = 'flex';
+            
+            const log = document.getElementById('mining-log');
+            log.innerHTML = `<div style="color:var(--warning)">[SYSTEM] Initializing Proof-of-Work...</div>`;
+            log.innerHTML += `<div>[SYSTEM] Target Difficulty: ${DFTS.difficulty} leading zeros.</div>`;
+            
+            // We use setTimeout to allow UI to update before heavy synchronous hashing
+            setTimeout(() => {
+                const startTime = Date.now();
+                let lastUpdate = 0;
+                
+                try {
+                    DFTS.minePendingTransactions(wallet.publicKey, (nonce, hash) => {
+                        // In a real browser this callback might not render smoothly due to sync block,
+                        // but it works enough for a simulation if the difficulty is low (e.g. 3 or 4)
+                        if(Date.now() - lastUpdate > 100) {
+                            log.innerHTML += `<div>[HASH] Nonce: ${nonce} | ${hash.substring(0, 32)}...</div>`;
+                            log.scrollTop = log.scrollHeight;
+                            lastUpdate = Date.now();
+                        }
+                    });
+                    
+                    const timeTaken = ((Date.now() - startTime) / 1000).toFixed(2);
+                    
+                    log.innerHTML += `<div style="color:var(--success); margin-top:1rem;">[SUCCESS] Block Mined! Time taken: ${timeTaken}s</div>`;
+                    log.innerHTML += `<div>[SYSTEM] Reward of $${DFTS.miningReward} sent to your wallet.</div>`;
+                    log.scrollTop = log.scrollHeight;
+                    
+                    document.getElementById('mining-anim').style.display = 'none';
+                    document.getElementById('btn-mine').disabled = false;
+                    renderPending();
+                    updateNavWallet();
+                    showToast("Block Mined Successfully!");
+                } catch(err) {
+                    log.innerHTML += `<div style="color:var(--danger)">[ERROR] ${err.message}</div>`;
+                    document.getElementById('mining-anim').style.display = 'none';
+                    document.getElementById('btn-mine').disabled = false;
+                }
+            }, 500);
+        }
+    </script>
+</body>
+</html>
