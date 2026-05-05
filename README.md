@@ -1,91 +1,88 @@
-# Decentralized Financial Transaction System using Blockchain and MetaMask
+# Hybrid Decentralized Financial Ecosystem (HDFE)
 
-This is a complete, production-quality Decentralized Application (DApp) that allows users to seamlessly connect their MetaMask wallet, send ETH to another address, and view their continuous transaction history securely stored on the blockchain.
-
-## ✨ Features
-- **Modern UI**: Polished glassmorphism styles built with React, Vite, Framer Motion, and Tailwind CSS.
-- **Smart Contracts**: Bulletproof Solidity contracts interacting flawlessly with the Ethereum Blockchain.
-- **DApp Integration**: Native connection to the user's browser Wallet (MetaMask) using Ethers.js.
-- **Advanced Validation**: Input checking for valid Ethereum Addresses and insufficient token balances before transacting.
-- **Robust Error Handling**: Toast architecture elegantly capturing & explaining MetaMask rejections, unconfigured addresses, missing funds, and network mismatches.
-- **Network Synchronization**: React seamlessly detects, warns, and prompts the user inside their wallet to auto-switch to Sepolia Testnet if they are connected to Mainnet or an Invalid Chain.
-- **Transaction Modal Receipts**: Detailed success dialogues allowing quick "View on Etherscan" links connected directly to the user's executed Transaction Hash.
-- **Asymmetric Loading States**: Disables forms and shows asynchronous loading metrics during block-confirmations.
+Welcome to the **Hybrid Decentralized Financial Ecosystem**. This project is a comprehensive, multi-layer blockchain and decentralized finance (DeFi) simulation. It is designed to demonstrate core blockchain cryptography, peer-to-peer networking, and Ethereum Web3 smart contract integration—all operating entirely offline.
 
 ---
 
-## 🚀 Quick Setup Instructions
+## 🚀 How to Run and Work on This Project
 
-We've configured the project using a "mono-repo" style root setup so you can run frontend and blockchain commands painlessly from the same root folder.
+This project requires **zero external dependencies** and no complex build steps (no Node.js packages to install, no React/Vite builds). It is built using pure HTML, CSS, and Vanilla JavaScript with bundled libraries.
 
-### 1. Install Everything
-Open a terminal in the root folder (`Blockchain/`) and run this command. It installs the necessary packages for both the `client` and `blockchain` folders all at once!
-```bash
-npm run install:all
-```
-
-### 2. Configure Environment Variables (`.env`)
-You need to put your secret keys in environment files before the application can start working correctly.
-
-**For the Blockchain (`blockchain/.env`):**
-1. Rename `blockchain/.env.example` to `.env`.
-2. Open it and add your details:
-   - `PRIVATE_KEY`: Your MetaMask wallet's private key (make sure this wallet has testnet ETH). **DO NOT share this online.**
-   - `SEPOLIA_RPC_URL`: An RPC URL (like Alchemy or Infura) pointing to the Sepolia network.
-
-**For the Client (`client/.env`):**
-1. Rename `client/.env.example` to `.env`.
-2. Add the `VITE_CONTRACT_ADDRESS` (you will obtain this in Step 3).
-
----
-
-### 3. Compile and Deploy the Smart Contract
-From your root folder terminal, compile your smart contract first:
-```bash
-npm run compile:contract
-```
-
-Now, deploy it to a live network (Sepolia) OR test it entirely locally.
-
-#### Option A: Deploy to Sepolia (Test Network)
-```bash
-npm run deploy:sepolia
-```
-*Note: This costs testnet-ETH (gas). Make sure your `.env` is setup properly!*
-
-#### Option B: Deploy to Localhost (Offline testing)
-1. In Terminal 1, start the local node (leave this running):
+### Step 1: Start the Local Server
+Because the project uses ES6 Modules and fetches local files, it must be run over a local web server (not just double-clicking the HTML file).
+1. Open your terminal in the root of the `Blockchain` folder.
+2. Run a simple HTTP server. For example:
    ```bash
-   npm run node:local
+   npx http-server -p 5500 .
    ```
-2. In Terminal 2, deploy to the local network:
-   ```bash
-   npm run deploy:local
-   ```
+   *(Alternatively, you can use `python -m http.server 5500` or the VS Code "Live Server" extension).*
 
-**⚠️ IMPORTANT**: Once deployed using either method, your terminal will spit out an address (e.g., `TransactionContract deployed to: 0x...`). Copy that address and save it into your `client/.env` file like this:
-```env
-VITE_CONTRACT_ADDRESS="0x123...abc"
-```
+### Step 2: Access the Platform
+1. Open your browser and navigate **strictly** to: **http://localhost:5500** 
+   *(Do NOT use `127.0.0.1` as MetaMask enforces strict security policies on IP addresses vs hostnames).*
+2. You will land on the **Dashboard (index.html)**.
+
+### Step 3: Configure Your Wallets
+1. Navigate to the **Wallet (Web3)** page.
+2. **Layer 1:** Click **Generate New L1 Wallet**. This creates an offline cryptographic Public/Private key pair used for the custom JavaScript blockchain.
+3. **Layer 3:** Click **Connect MetaMask**. This will prompt your browser extension to connect. *(Ensure your MetaMask is connected to a local Ganache instance or a testnet like Sepolia).*
+
+### Step 4: Test the Ecosystem (Step-by-Step)
+1. **Send Funds:** Go to the **Transfer** page. Use your L1 wallet to sign a transaction to a dummy address.
+2. **Mine the Block:** Go to the **Mining** page. You will see your transaction in the "Pending Pool". Click **Begin PoW Mining**. The system will perform SHA-256 calculations to solve the block.
+3. **Verify Ledger:** Go to the **Explorer** page. You will see the immutable ledger, the newly generated Merkle Root, and your confirmed transaction.
+4. **Smart Contracts:** Go to the **Contracts** page to interact directly with Solidity smart contracts via your connected MetaMask wallet.
 
 ---
 
-### 4. Start the Application
-Once you've saved the deployed contract address into `client/.env`, restart your React Server to apply the new `.env` change:
+## 🏗️ System Architecture & Components
 
-```bash
-# Run this from the root directory
-npm run dev:client
-```
+The HDFE is divided into **Three Core Layers**:
 
-Open the terminal link (usually `http://localhost:5173/`) in your browser to interact safely with the Web3 app!
+### 🔹 Layer 1: Custom Blockchain Engine (`/blockchain`, `/utils`)
+A fully functional blockchain built from scratch in JavaScript to demonstrate low-level mechanics.
+- **`crypto.js`**: Contains a pure, synchronous SHA-256 hashing algorithm. Generates offline key pairs and digital signatures.
+- **`merkle.js`**: Implements Merkle Trees to compress transaction data into a single root hash, ensuring data integrity.
+- **`block.js`**: Defines the block structure (`index`, `timestamp`, `merkleRoot`, `previousHash`, `nonce`). Contains the Proof-of-Work (PoW) mining loop.
+- **`blockchain.js`**: The core engine. Handles the chain state, validates double-spending, manages difficulty, and resolves the longest chain (Fork resolution).
+
+### 🔹 Layer 2: Network & P2P Simulation (`/network`)
+- **`node.js`**: Simulates a peer-to-peer distributed network. It spins up 3 virtual nodes (Main, Validator, Backup). Nodes communicate via a gossip protocol to broadcast transactions and synchronize mined blocks.
+
+### 🔹 Layer 3: Ethereum & Smart Contracts (`/web3`, `/contracts`)
+Integrates the traditional Ethereum Web3 stack for advanced DeFi operations.
+- **`metamask.js`**: Securely injects `window.ethereum`, handles account detection, balance fetching, and transaction signing.
+- **`contract.js`**: Uses a bundled offline `ethers.min.js` library to interact with compiled Solidity contracts.
+- **Solidity Contracts (`/contracts`)**:
+  - `escrow.sol`: Trustless payer-to-arbiter-to-payee locking mechanism.
+  - `loan.sol`: Over-collateralized lending and borrowing system.
+  - `token.sol`: ERC-20 compatible custom asset interface.
+  - `supplychain.sol`: Product lifecycle tracker logging state changes immutably.
 
 ---
 
-## 🔧 Frequently Asked Questions
+## 🖥️ Frontend Modules (The 8 Pages)
 
-**Q: I instantly get a "Transaction failed" toast with an Error in the Dev Console roughly stating `an ENS name used for a contract target must be correctly configured`.**
-> A: Your frontend can't find your `.env` Address, so it is falling back to placeholder text. Make sure you entered your deployed `0x...` contract address inside `client/.env` properly. If you *just* updated the `.env` file, **you must restart** your `npm run dev:client` server to pick up the change!
+All UI pages are located in `/frontend/pages/` and styled via `/css/style.css` using modern glassmorphism design.
 
-**Q: I get `HardhatError: HH117: Empty string '' for network` when trying to deploy.**
-> A: You are trying to deploy to Sepolia without entering a valid RPC Node in `blockchain/.env`. Go to Alchemy.com, make an app, get your API Key, and paste it under `SEPOLIA_RPC_URL`.
+1. **`index.html` (Dashboard)**: Central hub showing network telemetry, active nodes, and current block heights.
+2. **`wallet.html`**: Dual identity manager for L1 local keys and L3 MetaMask accounts.
+3. **`transaction.html`**: Cross-layer transfer interface.
+4. **`blockchain.html` (Explorer)**: Visualizes the immutable ledger, showing how blocks are cryptographically linked.
+5. **`mining.html`**: Real-time PoW simulation terminal. Adjust network difficulty and watch the hash brute-forcing live.
+6. **`contracts.html`**: Smart Contract playground. Execute `deposit()`, `release()`, `transfer()`, and `requestLoan()` via Web3.
+7. **`applications.html`**: Demonstrates industry-specific use cases (Supply Chain, Banking, Health Insurance) and explains network risks (Scalability, Energy).
+8. **`analytics.html`**: Graphical charts powered by `chart.min.js` showing Block Growth and Transactions-per-Block metrics over time.
+
+---
+
+## 📚 Academic Concept Coverage
+
+This project strictly adheres to theoretical blockchain concepts:
+- **Unit 1 (Fundamentals):** Showcases Keys as Identity, Digital Signatures, SHA-256 Hashing, and PoW Consensus in `blockchain.js` and `crypto.js`.
+- **Unit 2 (Applications):** The `applications.html` module conceptualizes Trade Finance, Supply Chain tracking, and analyzes architectural risks like Latency and Energy Consumption.
+- **Unit 3 (Deployment & Advanced):** Features a live Mining system, Fork resolution logic, Merkle Trees (SegWit foundation), and direct Smart Contract execution via Web3.
+
+---
+
+*Note: The `libs/` folder contains offline versions of `ethers.min.js` and `chart.min.js` to ensure the project works perfectly in completely offline, sandboxed environments.*
