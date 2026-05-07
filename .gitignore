@@ -11,3 +11,6 @@ artifacts/
 cache/
 **/.next/
 **/*.log
+__pycache__/
+**/__pycache__/
+*.pyc
