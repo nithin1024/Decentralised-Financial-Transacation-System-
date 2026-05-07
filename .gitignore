@@ -1,5 +1,7 @@
 node_modules/
 .env
+.env.local
+.env.*
 .DS_Store
 dist/
 build/
@@ -7,3 +9,5 @@ coverage/
 .hardhat/
 artifacts/
 cache/
+**/.next/
+**/*.log
